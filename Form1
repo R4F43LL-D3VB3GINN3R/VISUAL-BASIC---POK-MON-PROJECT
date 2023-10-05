@@ -1,0 +1,483 @@
+Imports MySql.Data.MySqlClient
+Imports System.Net.Mime.MediaTypeNames
+Imports System.Text
+Imports System.Windows.Forms
+Imports System.Windows.Forms.VisualStyles.VisualStyleElement
+
+Public Class Form1
+
+    ' Variável para rastrear a contagem de Pokémon na equipe 1
+    Public Team1Count As Integer
+
+    ' Variável para rastrear a contagem de Pokémon na equipe 3
+    Dim Team3Count As Integer
+
+    ' Variável para armazenar o Pokémon removido da equipe 1
+    Dim RemovedPokemonTeam1 As String
+
+    ' Lista para armazenar os Pokémon selecionados na equipe 1
+    Public SelectedPokemonTeam1 As New List(Of String)()
+
+    ' String de conexão com o banco de dados MySQL
+    Public StringConnection As String = "server=127.0.0.1;userid=root;password='';database=Pokemon_Game"
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        ' Define a flag OpenToChooseRed como True para permitir escolher Pokémon da equipe Red
+        OpenToChooseRed = True
+
+        ' Abre a conexão com o banco de dados
+        Connection.Open()
+
+        ' Remove todos os Pokémon da equipe 3 e equipe 1
+        Deleteam3.ExecuteNonQuery()
+        Deleteam1.ExecuteNonQuery()
+
+        ' Fecha a conexão com o banco de dados
+        Connection.Close()
+
+        Try
+            ' Cria DataTables para armazenar a equipe Red e equipe Blue
+            Dim TeamRed As New DataTable()
+            Dim TeamBlue As New DataTable()
+
+            ' Abre a conexão com o banco de dados novamente
+            Connection.Open()
+
+            ' Preenche os DataTables com os dados dos Pokémon
+            AllPokemon.Fill(TeamRed)
+            AllPokemon.Fill(TeamBlue)
+
+            ' Fecha a conexão com o banco de dados
+            Connection.Close()
+
+            ' Preenche o ComboBox1_P1 com os nomes dos Pokémon da equipe Red
+            For Each row As DataRow In TeamRed.Rows
+                Dim NomePokemon As String = row("Name").ToString()
+                ComboBox1_P1.Items.Add(NomePokemon)
+            Next
+
+            ' Preenche o ComboBox2_P2 com os nomes dos Pokémon da equipe Blue
+            For Each row As DataRow In TeamBlue.Rows
+                Dim NomePokemon As String = row("Name").ToString()
+                ComboBox2_P2.Items.Add(NomePokemon)
+            Next
+        Catch
+            ' Exibe uma mensagem de erro se ocorrer uma exceção
+            MessageBox.Show("Ocorreu um erro ao carregar os dados.")
+        Finally
+            ' Garante que a conexão seja fechada, mesmo em caso de erro
+            If Connection.State = ConnectionState.Open Then
+                Connection.Close()
+            End If
+        End Try
+
+        ' Define tooltips para as imagens PictureBox
+        ToolTip1_P1.SetToolTip(PictureBox1_P1, "Selecione um Pokémon para ver seus atributos")
+        ToolTip1_P1.SetToolTip(PictureBox2_P1, "Selecione um Pokémon para ver seus atributos")
+        ToolTip1_P1.SetToolTip(PictureBox3_P1, "Selecione um Pokémon para ver seus atributos")
+        ToolTip1_P1.SetToolTip(PictureBox4_P1, "Selecione um Pokémon para ver seus atributos")
+        ToolTip1_P1.SetToolTip(PictureBox5_P1, "Selecione um Pokémon para ver seus atributos")
+        ToolTip1_P1.SetToolTip(PictureBox6_P1, "Selecione um Pokémon para ver seus atributos")
+
+    End Sub
+    Private Sub Pushbutton_Insert_P1_Click(sender As Object, e As EventArgs) Handles Pushbutton_Insert_P1.Click
+
+        If OpenToChooseRed = False Then
+            ' Verifica se a escolha para a equipe Red está fechada
+            MessageBoxRedTeam.LabelMessage.Text = "Red Team has reached the limit of 6 Pokémon!"
+            MessageBoxRedTeam.Show()
+            Return
+        Else
+
+            Dim SelectedPokemon As String
+            Dim PokemonTeam1 As New MySqlCommand("Insert Into Team1 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Pokemon Where Name = @NamePokemon", Connection)
+
+            If ComboBox1_P1.SelectedIndex = -1 Then
+                ' Verifica se nenhum Pokémon está selecionado no ComboBox
+                MessageBoxRedTeam.LabelMessage.Text = "Escolha um Pokémon na sua lista!"
+                MessageBoxRedTeam.Show()
+                Return
+            End If
+
+            SelectedPokemon = ComboBox1_P1.SelectedItem.ToString()
+
+            If SelectedPokemonTeam1.Count < 6 AndAlso Not SelectedPokemonTeam1.Contains(SelectedPokemon) Then
+                ' Verifica se o número de Pokémon selecionados na equipe Red é menor que 6 e se o Pokémon já não foi selecionado
+
+                Dim paramTeam1 As New MySqlParameter("@NamePokemon", SelectedPokemon)
+                PokemonTeam1.Parameters.Add(paramTeam1)
+
+                Connection.Open()
+                PokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+
+                SelectedPokemonTeam1.Add(SelectedPokemon)
+                Team1Count += 1
+
+                MessageBoxRedTeam.LabelMessage.Text = "You chose the Pokémon " & SelectedPokemon & " for Red Team!"
+                MessageBoxRedTeam.Show()
+
+            ElseIf SelectedPokemonTeam1.Count >= 6 Then
+                ' Verifica se a equipe Red atingiu o limite de 6 Pokémon
+                MessageBoxRedTeam.LabelMessage.Text = "Red Team has reached the limit of 6 Pokémon!"
+                MessageBoxRedTeam.Show()
+                Return
+            Else
+                MessageBoxRedTeam.LabelMessage.Text = "You've already chosen " & SelectedPokemon & " for Red Team!"
+                MessageBoxRedTeam.Show()
+                Return
+            End If
+
+            Select Case Team1Count
+                Case 1
+                    ' Caso a equipe Red tenha 1 Pokémon selecionado
+
+                    Label1_P1.Text = SelectedPokemon
+                    ' Define o nome do Pokémon no Label correspondente
+
+                    Checked1_P1.Visible = True
+                    ' Torna o indicador de seleção visível para o primeiro Pokémon
+
+                    SetImageForControl(Label1_P1.Text, PictureBox1_P1.Image)
+                    ' Define a imagem do Pokémon selecionado no PictureBox
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label1_P1.Text)
+                    ' Obtém os dados do Pokémon a partir do banco de dados
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label1_P1.Text)
+                    ' Obtém os movimentos do Pokémon a partir do banco de dados
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        ' Para cada movimento do Pokémon
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        ' Adiciona o nome do movimento ao texto
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        ' Adiciona o tipo do movimento ao texto
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        ' Adiciona o dano do movimento ao texto
+                        movesStringBuilder.AppendLine()
+                        ' Adiciona uma linha em branco para separar os movimentos
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox1_P1,
+                                "Name: " & pokemonData.Name & vbCrLf &
+                                "Type: " & pokemonData.Type & vbCrLf &
+                                "HP: " & pokemonData.HP & vbCrLf &
+                                "PP: " & pokemonData.PP & vbCrLf &
+                                "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                "Moves:" & vbCrLf & movesStringBuilder.ToString())
+        ' Define o texto da dica de ferramenta (tooltip) para exibir os detalhes do Pokémon e seus movimentos
+
+                Case 2
+
+                    Label2_P1.Text = SelectedPokemon
+                    Checked2_P1.Visible = True
+                    SetImageForControl(Label2_P1.Text, PictureBox2_P1.Image)
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label2_P1.Text)
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label2_P1.Text)
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        movesStringBuilder.AppendLine()
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox2_P1,
+                                   "Name: " & pokemonData.Name & vbCrLf &
+                                   "Type: " & pokemonData.Type & vbCrLf &
+                                   "HP: " & pokemonData.HP & vbCrLf &
+                                   "PP: " & pokemonData.PP & vbCrLf &
+                                   "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                   "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+                Case 3
+
+                    Label3_P1.Text = SelectedPokemon
+                    Checked3_P1.Visible = True
+                    SetImageForControl(Label3_P1.Text, PictureBox3_P1.Image)
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label3_P1.Text)
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label3_P1.Text)
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        movesStringBuilder.AppendLine()
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox3_P1,
+                                   "Name: " & pokemonData.Name & vbCrLf &
+                                   "Type: " & pokemonData.Type & vbCrLf &
+                                   "HP: " & pokemonData.HP & vbCrLf &
+                                   "PP: " & pokemonData.PP & vbCrLf &
+                                   "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                   "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+                Case 4
+
+                    Label4_P1.Text = SelectedPokemon
+                    Checked4_P1.Visible = True
+                    SetImageForControl(Label4_P1.Text, PictureBox4_P1.Image)
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label4_P1.Text)
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label4_P1.Text)
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        movesStringBuilder.AppendLine()
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox4_P1,
+                                   "Name: " & pokemonData.Name & vbCrLf &
+                                   "Type: " & pokemonData.Type & vbCrLf &
+                                   "HP: " & pokemonData.HP & vbCrLf &
+                                   "PP: " & pokemonData.PP & vbCrLf &
+                                   "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                   "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+                Case 5
+
+                    Label5_P1.Text = SelectedPokemon
+                    Checked5_P1.Visible = True
+                    SetImageForControl(Label5_P1.Text, PictureBox5_P1.Image)
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label5_P1.Text)
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label5_P1.Text)
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        movesStringBuilder.AppendLine()
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox5_P1,
+                                   "Name: " & pokemonData.Name & vbCrLf &
+                                   "Type: " & pokemonData.Type & vbCrLf &
+                                   "HP: " & pokemonData.HP & vbCrLf &
+                                   "PP: " & pokemonData.PP & vbCrLf &
+                                   "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                   "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+                Case 6
+
+                    Label6_P1.Text = SelectedPokemon
+                    Checked6_P1.Visible = True
+                    SetImageForControl(Label6_P1.Text, PictureBox6_P1.Image)
+
+                    Dim pokemonData As PokemonData = GetPokemonData(Label6_P1.Text)
+                    Dim moves As List(Of MoveData) = GetPokemonMoves(Label6_P1.Text)
+                    Dim movesStringBuilder As New StringBuilder()
+
+                    For Each move As MoveData In moves
+                        movesStringBuilder.AppendLine("Name: " & move.Name)
+                        movesStringBuilder.AppendLine("Type: " & move.Type)
+                        movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                        movesStringBuilder.AppendLine()
+                    Next
+
+                    ToolTip1_P1.SetToolTip(PictureBox6_P1,
+                                   "Name: " & pokemonData.Name & vbCrLf &
+                                   "Type: " & pokemonData.Type & vbCrLf &
+                                   "HP: " & pokemonData.HP & vbCrLf &
+                                   "PP: " & pokemonData.PP & vbCrLf &
+                                   "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                                   "Moves:" & vbCrLf & movesStringBuilder.ToString())
+                Case Else
+
+                    If Label1_P1.Text = "Pokémon 1" Then
+                        ToolTip1_P1.SetToolTip(PictureBox1_P1, "Select a Pokemon to view your stats")
+                    End If
+
+            End Select
+
+        End If
+
+    End Sub
+    Private Sub Pushbutton_Remove_P1_Click(sender As Object, e As EventArgs) Handles Pushbutton_Remove_P1.Click
+        ' Manipula o evento de remoção de um Pokémon da equipe Red
+
+        Dim RemovePokemonTeam1 As New MySqlCommand("Delete From Team1 Where Name = @NamePokemon", Connection)
+        ' Cria um comando SQL para remover um Pokémon da equipe Red com base em seu nome
+
+        Select Case Team1Count
+        ' Avalia o número de Pokémon na equipe Red
+
+            Case 1
+                ' Se houver 1 Pokémon na equipe Red
+
+                RemovedPokemonTeam1 = Label1_P1.Text
+                ' Obtém o nome do Pokémon que será removido
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                ' Define o parâmetro para o nome do Pokémon a ser removido
+
+                Connection.Open()
+                ' Abre a conexão com o banco de dados
+                RemovePokemonTeam1.ExecuteNonQuery()
+                ' Executa o comando SQL para remover o Pokémon
+                Connection.Close()
+                ' Fecha a conexão com o banco de dados
+
+                Label1_P1.Text = "Pokémon 1"
+                ' Define o texto do Label do primeiro Pokémon como "Pokémon 1"
+                SetImageForControl("01_RedTeam", PictureBox1_P1.Image)
+                ' Define a imagem do indicador de seleção como o emblema da equipe Red
+                SelectedPokemonTeam1.RemoveAt(0)
+                ' Remove o primeiro Pokémon da lista de Pokémon selecionados para a equipe Red
+                Checked1_P1.Visible = False
+                ' Torna o indicador de seleção do primeiro Pokémon invisível
+                ToolTip1_P1.SetToolTip(PictureBox1_P1, "Select a Pokemon to view your Stats")
+            ' Define a dica de ferramenta (tooltip) para o PictureBox do primeiro Pokémon
+
+            ' Repita o mesmo padrão para os demais casos (caso haja mais casos)
+
+            Case 2
+
+                RemovedPokemonTeam1 = Label2_P1.Text
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                Connection.Open()
+                RemovePokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+                Label2_P1.Text = "Pokémon 2"
+                SetImageForControl("01_RedTeam", PictureBox2_P1.Image)
+                SelectedPokemonTeam1.RemoveAt(1)
+                Checked2_P1.Visible = False
+                ToolTip1_P1.SetToolTip(PictureBox2_P1, "Select a Pokemon to view your Stats")
+
+            Case 3
+
+                RemovedPokemonTeam1 = Label3_P1.Text
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                Connection.Open()
+                RemovePokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+                Label3_P1.Text = "Pokémon 3"
+                SetImageForControl("01_RedTeam", PictureBox3_P1.Image)
+                SelectedPokemonTeam1.RemoveAt(2)
+                Checked3_P1.Visible = False
+                ToolTip1_P1.SetToolTip(PictureBox3_P1, "Select a Pokemon to view your Stats")
+
+            Case 4
+
+                RemovedPokemonTeam1 = Label4_P1.Text
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                Connection.Open()
+                RemovePokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+                Label4_P1.Text = "Pokémon 4"
+                SetImageForControl("01_RedTeam", PictureBox4_P1.Image)
+                SelectedPokemonTeam1.RemoveAt(3)
+                Checked4_P1.Visible = False
+                ToolTip1_P1.SetToolTip(PictureBox4_P1, "Select a Pokemon to view your Stats")
+
+            Case 5
+
+                RemovedPokemonTeam1 = Label5_P1.Text
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                Connection.Open()
+                RemovePokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+                Label5_P1.Text = "Pokémon 5"
+                SetImageForControl("01_RedTeam", PictureBox5_P1.Image)
+                SelectedPokemonTeam1.RemoveAt(4)
+                Checked5_P1.Visible = False
+                ToolTip1_P1.SetToolTip(PictureBox5_P1, "Select a Pokemon to view your Stats")
+
+            Case 6
+
+                RemovedPokemonTeam1 = Label6_P1.Text
+                RemovePokemonTeam1.Parameters.AddWithValue("@NamePokemon", RemovedPokemonTeam1)
+                Connection.Open()
+                RemovePokemonTeam1.ExecuteNonQuery()
+                Connection.Close()
+                Label6_P1.Text = "Pokémon 6"
+                SetImageForControl("01_RedTeam", PictureBox6_P1.Image)
+                SelectedPokemonTeam1.RemoveAt(5)
+                Checked6_P1.Visible = False
+                ToolTip1_P1.SetToolTip(PictureBox6_P1, "Select a Pokemon to view your Stats")
+
+            Case Else
+
+        End Select
+
+        Team1Count -= 1
+        ' Decrementa o contador da equipe Red (número de Pokémon na equipe)
+
+        Select Case Team1Count
+        ' Avalia o número atual de Pokémon na equipe Red
+
+            Case -1
+                ' Se o contador for negativo (não deveria acontecer, mas por precaução)
+
+                Team1Count = 0
+                ' Define o contador de equipe Red como zero (mínimo possível)
+
+        End Select
+
+        OpenToChooseRed = True
+        ' Permite a escolha de Pokémon para a equipe Red novamente
+
+    End Sub
+    Private Sub Pushbutton_Done_P1_Click(sender As Object, e As EventArgs) Handles Pushbutton_Done_P1.Click
+        ' Manipula o evento de conclusão para a equipe Red
+
+        If Team1Count = 6 Then
+            ' Verifica se a equipe Red possui 6 Pokémon
+
+            Connection.Open()
+            Team1toTeam3.ExecuteNonQuery()
+            Connection.Close()
+            ' Move os Pokémon da equipe Red para a equipe Blue (Team3)
+
+        Else
+            ' Caso a equipe Red não tenha 6 Pokémon
+
+            MessageBoxRedTeam.LabelMessage.Text = "Você precisa ter uma equipe para prosseguir!"
+            MessageBoxRedTeam.Show()
+            ' Exibe uma mensagem informando que é necessário ter uma equipe para continuar
+
+        End If
+
+    End Sub
+
+    Private Sub PB_SAVE_P1_Click(sender As Object, e As EventArgs) Handles PB_SAVE_P1.Click
+        ' Manipula o evento de salvar a equipe Red
+
+        If Team1Count = 6 Then
+            ' Verifica se a equipe Red possui 6 Pokémon
+
+            Form3.Show()
+            ' Abre o Form3 para salvar a equipe
+
+        Else
+            ' Caso a equipe Red não tenha 6 Pokémon
+
+            MessageBoxRedTeam.LabelMessage.Text = "Você precisa ter uma equipe para prosseguir!"
+            MessageBoxRedTeam.Show()
+            ' Exibe uma mensagem informando que é necessário ter uma equipe para continuar
+
+        End If
+
+    End Sub
+    Private Sub PB_LOAD_P1_Click(sender As Object, e As EventArgs) Handles PB_LOAD_P1.Click
+        ' Manipula o evento de clique no botão "Carregar" (Load)
+
+        ' Abre o Formulário 4 quando o botão "Carregar" é clicado
+        Form4.Show()
+    End Sub
+    Private Sub PushButtonExit_Click(sender As Object, e As EventArgs) Handles PushButtonExit.Click
+        ' Manipula o evento de clique no botão "Sair" (Exit)
+
+        End ' Encerra o aplicativo
+    End Sub
+
+End Class
