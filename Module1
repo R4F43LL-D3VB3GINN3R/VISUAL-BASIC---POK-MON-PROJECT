@@ -1,0 +1,220 @@
+Imports MySql.Data.MySqlClient
+Imports Pokemon_Revised_0._0._2a.Module1
+Imports System.Drawing
+Imports System.Net.Mime.MediaTypeNames
+
+Module Module1
+
+    ' Configuração da conexão com o banco de dados
+    Public StringConnection As String = "server=127.0.0.1;userid=root;password='';database=Pokemon_Game"
+    Public Connection As New MySqlConnection(StringConnection)
+
+    ' DataTables para armazenar dados de equipes
+    Public TeamRed As New DataTable()
+    Public TeamBlue As New DataTable()
+    Public DataTeam1 As New DataTable()
+    Public DataTeam2 As New DataTable()
+    Public DataTeam3 As New DataTable()
+    Public DataTeam4 As New DataTable()
+
+    ' Adaptadores de dados para consulta ao banco de dados
+    Public AllPokemon As New MySqlDataAdapter("Select Name From Pokemon", Connection)
+    Public AllTeam1 As New MySqlDataAdapter("Select * From Team1", Connection)
+    Public AllTeam5 As New MySqlDataAdapter("Select * From Team5", Connection)
+
+    ' Comandos SQL parametrizados para adicionar Pokémon às equipes
+    Public PokemonTeam1 As New MySqlCommand("Insert Into Team1 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Pokemon Where Name = @NamePokemon", Connection)
+    Public PokemonTeam2 As New MySqlCommand("Insert Into Team2 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Pokemon Where Name = @NamePokemon2", Connection)
+    Public PokemonTeam3 As New MySqlCommand("Insert Into Team3 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Pokemon Where Name = @NamePokemon3", Connection)
+    Public PokemonTeam4 As New MySqlCommand("Insert Into Team4 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Pokemon Where Name = @NamePokemon4", Connection)
+
+    ' Comandos SQL para copiar Pokémon de uma equipe para outra
+    Public Team1toTeam3 As New MySqlCommand("Insert Into Team3 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Team1", Connection)
+    Public Team1toTeam5 As New MySqlCommand("Insert Into Team5 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Team1", Connection)
+    Public Team1toTeam6 As New MySqlCommand("Insert Into Team6 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Team1", Connection)
+    Public Team1toTeam7 As New MySqlCommand("Insert Into Team7 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Team1", Connection)
+    Public Team2toTeam4 As New MySqlCommand("Insert Into Team4 (Name, Type, HP, PP, Speed, Status) " & "Select Name, Type, HP, PP, Speed, Status " & "From Team2", Connection)
+
+    ' Comando SQL para remover um Pokémon de uma equipe
+    Public RemovePokemonTeam1 As New MySqlCommand("Delete From Team1 Where Name = @NamePokemon", Connection)
+
+    ' Comandos SQL para excluir todos os Pokémon de equipes
+    Public Deleteam1 As New MySqlCommand("Delete From Team1", Connection)
+    Public Deleteam2 As New MySqlCommand("Delete From Team2", Connection)
+    Public Deleteam3 As New MySqlCommand("Delete From Team3", Connection)
+    Public Deleteam4 As New MySqlCommand("Delete From Team4", Connection)
+    Public Deleteam5 As New MySqlCommand("Delete From Team5", Connection)
+    Public Deleteam6 As New MySqlCommand("Delete From Team6", Connection)
+    Public Deleteam7 As New MySqlCommand("Delete From Team7", Connection)
+
+    ' Listas para armazenar Pokémon selecionados em equipes
+    Public SelectedPokemonTeam1 As New List(Of String)()
+    Public SelectedPokemonTeam2 As New List(Of String)()
+    Public SelectedPokemonTeam3 As New List(Of String)()
+    Public SelectedPokemonTeam4 As New List(Of String)()
+
+    ' Contador para acompanhar a contagem de Pokémon em uma equipe
+    Public Team1Count As Integer
+
+    ' Variável para armazenar mensagens de rótulo
+    Public LabelMessage As String
+
+    ' Dicionário para armazenar nomes de arquivos de imagens de Pokémon
+    Public Pokepictures As New Dictionary(Of String, String)
+
+    ' Variável de sinalização para escolher equipes
+    Public OpenToChooseRed As Boolean
+    Public Class PokemonData
+        Public Property Name As String   ' Nome do Pokémon
+        Public Property Type As String   ' Tipo do Pokémon
+        Public Property HP As Integer    ' Pontos de vida do Pokémon
+        Public Property PP As Integer    ' Pontos de poder do Pokémon
+        Public Property Speed As Integer ' Velocidade do Pokémon
+        Public Property Status As String ' Estado do Pokémon (por exemplo, "Paralisado", "Envenenado")
+
+    End Class
+
+    Public Class MoveData
+        Public Property Name As String   ' Nome do movimento
+        Public Property Type As String   ' Tipo do movimento
+        Public Property Damage As Integer ' Dano causado pelo movimento
+
+    End Class
+    Public Sub Pokeimages()
+
+        ' Limpa qualquer mapeamento existente no dicionário
+        Pokepictures.Clear()
+
+        ' Adiciona entradas ao dicionário mapeando nomes de Pokémon para os caminhos de suas imagens
+        Pokepictures.Add("Bulbasaur", "C:\proj\Pokemons_Imagens\1.gif")
+        Pokepictures.Add("Charmander", "C:\proj\Pokemons_Imagens\2.gif")
+        Pokepictures.Add("Squirtle", "C:\proj\Pokemons_Imagens\3.gif")
+        Pokepictures.Add("Pikachu", "C:\proj\Pokemons_Imagens\4.gif")
+        Pokepictures.Add("Jigglypuff", "C:\proj\Pokemons_Imagens\5.gif")
+        Pokepictures.Add("Zubat", "C:\proj\Pokemons_Imagens\6.gif")
+        Pokepictures.Add("Geodude", "C:\proj\Pokemons_Imagens\7.gif")
+        Pokepictures.Add("Machop", "C:\proj\Pokemons_Imagens\8.gif")
+        Pokepictures.Add("Ditto", "C:\proj\Pokemons_Imagens\9.gif")
+        Pokepictures.Add("Eevee", "C:\proj\Pokemons_Imagens\10.gif")
+        Pokepictures.Add("Porygon", "C:\proj\Pokemons_Imagens\11.gif")
+        Pokepictures.Add("Clefairy", "C:\proj\Pokemons_Imagens\12.gif")
+        Pokepictures.Add("Vulpix", "C:\proj\Pokemons_Imagens\13.gif")
+        Pokepictures.Add("Oddish", "C:\proj\Pokemons_Imagens\14.gif")
+        Pokepictures.Add("Paras", "C:\proj\Pokemons_Imagens\15.gif")
+        Pokepictures.Add("Venonat", "C:\proj\Pokemons_Imagens\16.gif")
+        Pokepictures.Add("Meowth", "C:\proj\Pokemons_Imagens\17.gif")
+        Pokepictures.Add("Psyduck", "C:\proj\Pokemons_Imagens\18.gif")
+        Pokepictures.Add("Mankey", "C:\proj\Pokemons_Imagens\19.gif")
+        Pokepictures.Add("Growlithe", "C:\proj\Pokemons_Imagens\20.gif")
+        Pokepictures.Add("Poliwag", "C:\proj\Pokemons_Imagens\21.gif")
+        Pokepictures.Add("Abra", "C:\proj\Pokemons_Imagens\22.gif")
+        Pokepictures.Add("Magikarp", "C:\proj\Pokemons_Imagens\23.gif")
+        Pokepictures.Add("Bellsprout", "C:\proj\Pokemons_Imagens\24.gif")
+        Pokepictures.Add("Tentacool", "C:\proj\Pokemons_Imagens\25.gif")
+        Pokepictures.Add("Pidgey", "C:\proj\Pokemons_Imagens\26.gif")
+        Pokepictures.Add("Spearow", "C:\proj\Pokemons_Imagens\27.gif")
+        Pokepictures.Add("Farfetch'd", "C:\proj\Pokemons_Imagens\28.gif")
+        Pokepictures.Add("Doduo", "C:\proj\Pokemons_Imagens\29.gif")
+        Pokepictures.Add("Gastly", "C:\proj\Pokemons_Imagens\30.gif")
+        Pokepictures.Add("01_RedTeam", "C:\proj\Pokemons_Imagens\01_RedTeam.gif")
+        Pokepictures.Add("02_BlueTeam", "C:\proj\Pokemons_Imagens\02_BlueTeam.gif")
+
+    End Sub
+
+    Public Sub SetImageForControl(nomeControle As String, ByRef imagem As System.Drawing.Image)
+        ' Carrega o dicionário de mapeamento de imagens dos Pokémon
+        Pokeimages()
+
+        ' Verifica se o nome do controle existe no dicionário
+        If Pokepictures.ContainsKey(nomeControle) Then
+            ' Se existir, carrega a imagem correspondente a partir do caminho do arquivo no dicionário
+            imagem = System.Drawing.Image.FromFile(Pokepictures(nomeControle))
+        Else
+            ' Se o nome do controle não for encontrado, exibe uma mensagem de erro
+            MessageBox.Show("Controle não encontrado: " & nomeControle)
+        End If
+    End Sub
+
+    Public Function GetPokemonData(pokemonName As String) As PokemonData
+        ' Cria uma nova instância de PokemonData para armazenar os dados do Pokémon
+        Dim pokemonData As New PokemonData()
+
+        ' Consulta SQL para buscar os dados do Pokémon com base no nome
+        Dim query As String = "SELECT Name, Type, HP, PP, Speed, Status FROM Pokemon WHERE Name = @NamePokemon"
+
+        ' Cria uma nova conexão MySQL
+        Using connection As New MySqlConnection("server=127.0.0.1;userid=root;password='';database=Pokemon_Game")
+            ' Abre a conexão com o banco de dados
+            connection.Open()
+
+            ' Cria um comando MySQL com a consulta SQL e a conexão
+            Using cmd As New MySqlCommand(query, connection)
+                ' Define o parâmetro @NamePokemon na consulta SQL com o valor do nome do Pokémon
+                cmd.Parameters.AddWithValue("@NamePokemon", pokemonName)
+
+                ' Executa a consulta SQL e obtém um leitor de dados
+                Dim reader As MySqlDataReader = cmd.ExecuteReader()
+
+                ' Verifica se há uma linha de resultado
+                If reader.Read() Then
+                    ' Preenche o objeto pokemonData com os dados do Pokémon
+                    pokemonData.Name = reader("Name").ToString()
+                    pokemonData.Type = reader("Type").ToString()
+                    ' Converte os valores numéricos para os tipos apropriados (HP, PP e Speed são Integer)
+                    Integer.TryParse(reader("HP").ToString(), pokemonData.HP)
+                    Integer.TryParse(reader("PP").ToString(), pokemonData.PP)
+                    Integer.TryParse(reader("Speed").ToString(), pokemonData.Speed)
+                    pokemonData.Status = reader("Status").ToString()
+                End If
+
+                ' Fecha o leitor de dados
+                reader.Close()
+            End Using
+
+            ' Retorna o objeto pokemonData preenchido
+            Return pokemonData
+        End Using
+    End Function
+
+    Public Function GetPokemonMoves(pokemonName As String) As List(Of MoveData)
+        ' Cria uma lista para armazenar os movimentos do Pokémon
+        Dim moves As New List(Of MoveData)
+
+        ' Consulta SQL para buscar os movimentos do Pokémon com base no nome
+        Dim query As String = "SELECT Name, Type, Damage FROM Moves WHERE Pokemon_ID = (SELECT ID FROM Pokemon WHERE Name = @NamePokemon)"
+
+        ' Cria uma nova conexão MySQL
+        Using connection As New MySqlConnection("server=127.0.0.1;userid=root;password='';database=Pokemon_Game")
+            ' Abre a conexão com o banco de dados
+            connection.Open()
+
+            ' Cria um comando MySQL com a consulta SQL e a conexão
+            Using cmd As New MySqlCommand(query, connection)
+                ' Define o parâmetro @NamePokemon na consulta SQL com o valor do nome do Pokémon
+                cmd.Parameters.AddWithValue("@NamePokemon", pokemonName)
+
+                ' Executa a consulta SQL e obtém um leitor de dados
+                Dim reader As MySqlDataReader = cmd.ExecuteReader()
+
+                ' Itera pelas linhas de resultado
+                While reader.Read()
+                    ' Cria um objeto MoveData para representar um movimento
+                    Dim move As New MoveData()
+                    move.Name = reader("Name").ToString()
+                    move.Type = reader("Type").ToString()
+                    ' Converte o valor de Damage para Integer
+                    move.Damage = Integer.Parse(reader("Damage").ToString())
+                    ' Adiciona o movimento à lista de movimentos
+                    moves.Add(move)
+                End While
+
+                ' Fecha o leitor de dados
+                reader.Close()
+            End Using
+        End Using
+
+        ' Retorna a lista de movimentos do Pokémon
+        Return moves
+    End Function
+
+End Module
