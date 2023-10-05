@@ -1,0 +1,581 @@
+Imports System.Text
+Imports MySql.Data.MySqlClient
+
+Public Class Form4
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+
+        ' Manipulador de clique para o botão Button1 (Carregar Equipe)
+
+        ' Verifica se o Form1 já está aberto
+        If Application.OpenForms.OfType(Of Form1)().Any() Then
+            ' Obtém uma referência ao Form1 aberto
+            Dim Form1 As Form1 = Application.OpenForms.OfType(Of Form1)().First()
+
+            ' DataTable para armazenar os dados da equipe
+            Dim TeamRed As New DataTable()
+
+            ' Adaptador para buscar os dados da Team5 (ou outro slot desejado)
+            Dim AllTeam5 As New MySqlDataAdapter("Select * From Team5", Connection)
+
+            ' Abre a conexão com o banco de dados e preenche o DataTable com os dados da equipe
+            Connection.Open()
+            AllTeam5.Fill(TeamRed)
+            Connection.Close()
+
+            ' Obtém os dados de cada Pokémon na equipe do DataTable
+            Dim Row1 As DataRow = TeamRed.Rows(0)
+            Dim Row2 As DataRow = TeamRed.Rows(1)
+            Dim Row3 As DataRow = TeamRed.Rows(2)
+            Dim Row4 As DataRow = TeamRed.Rows(3)
+            Dim Row5 As DataRow = TeamRed.Rows(4)
+            Dim Row6 As DataRow = TeamRed.Rows(5)
+
+            ' Obtém os nomes dos Pokémon de cada coluna
+            Dim Column1 As Object = Row1("Name")
+            Dim Column2 As Object = Row2("Name")
+            Dim Column3 As Object = Row3("Name")
+            Dim Column4 As Object = Row4("Name")
+            Dim Column5 As Object = Row5("Name")
+            Dim Column6 As Object = Row6("Name")
+
+            ' Define os nomes dos Pokémon e exibe suas imagens em Form1
+            Form1.Label1_P1.Text = Column1
+            Form1.Label2_P1.Text = Column2
+            Form1.Label3_P1.Text = Column3
+            Form1.Label4_P1.Text = Column4
+            Form1.Label5_P1.Text = Column5
+            Form1.Label6_P1.Text = Column6
+
+            ' Exibe as imagens dos Pokémon em Form1
+            SetImageForControl(Form1.Label1_P1.Text, Form1.PictureBox1_P1.Image)
+            SetImageForControl(Form1.Label2_P1.Text, Form1.PictureBox2_P1.Image)
+            SetImageForControl(Form1.Label3_P1.Text, Form1.PictureBox3_P1.Image)
+            SetImageForControl(Form1.Label4_P1.Text, Form1.PictureBox4_P1.Image)
+            SetImageForControl(Form1.Label5_P1.Text, Form1.PictureBox5_P1.Image)
+            SetImageForControl(Form1.Label6_P1.Text, Form1.PictureBox6_P1.Image)
+
+            ' Torna os CheckBoxes visíveis em Form1
+            Form1.Checked1_P1.Visible = True
+            Form1.Checked2_P1.Visible = True
+            Form1.Checked3_P1.Visible = True
+            Form1.Checked4_P1.Visible = True
+            Form1.Checked5_P1.Visible = True
+            Form1.Checked6_P1.Visible = True
+
+            ' Inicializa a lista de Pokémon selecionados em Form1, se for nula
+            If Form1.SelectedPokemonTeam1 Is Nothing Then
+                Form1.SelectedPokemonTeam1 = New List(Of String)()
+            End If
+
+            ' Adiciona os nomes dos Pokémon selecionados à lista em Form1
+            For i As Integer = 1 To 6
+                Dim labelText As String = DirectCast(Form1.Controls("Label" & i & "_P1"), Label).Text
+                Form1.SelectedPokemonTeam1.Add(labelText)
+            Next i
+
+            ' Define o contador da equipe em Form1 como 6
+            Form1.Team1Count = 6
+
+            ' Obtém os dados do primeiro Pokémon da equipe
+            Dim pokemonData As PokemonData = GetPokemonData(Form1.Label1_P1.Text)
+            Dim moves As List(Of MoveData) = GetPokemonMoves(Form1.Label1_P1.Text)
+            Dim movesStringBuilder As New StringBuilder()
+
+            ' Constrói uma string com os detalhes dos movimentos do Pokémon
+            For Each move As MoveData In moves
+                movesStringBuilder.AppendLine("Name: " & move.Name)
+                movesStringBuilder.AppendLine("Type: " & move.Type)
+                movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder.AppendLine()
+            Next
+
+            ' Define a dica de ferramenta do PictureBox1_P1 em Form1 com os detalhes do Pokémon
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox1_P1,
+                "Name: " & pokemonData.Name & vbCrLf &
+                "Type: " & pokemonData.Type & vbCrLf &
+                "HP: " & pokemonData.HP & vbCrLf &
+                "PP: " & pokemonData.PP & vbCrLf &
+                "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+            Dim pokemonData2 As PokemonData = GetPokemonData(Form1.Label2_P1.Text)
+            Dim moves2 As List(Of MoveData) = GetPokemonMoves(Form1.Label2_P1.Text)
+            Dim movesStringBuilder2 As New StringBuilder()
+
+            For Each move As MoveData In moves2
+                movesStringBuilder2.AppendLine("Name: " & move.Name)
+                movesStringBuilder2.AppendLine("Type: " & move.Type)
+                movesStringBuilder2.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder2.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox2_P1,
+                               "Name: " & pokemonData2.Name & vbCrLf &
+                               "Type: " & pokemonData2.Type & vbCrLf &
+                               "HP: " & pokemonData2.HP & vbCrLf &
+                               "PP: " & pokemonData2.PP & vbCrLf &
+                               "Speed: " & pokemonData2.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder2.ToString())
+
+            Dim pokemonData3 As PokemonData = GetPokemonData(Form1.Label3_P1.Text)
+            Dim moves3 As List(Of MoveData) = GetPokemonMoves(Form1.Label3_P1.Text)
+            Dim movesStringBuilder3 As New StringBuilder()
+
+            For Each move As MoveData In moves3
+                movesStringBuilder3.AppendLine("Name: " & move.Name)
+                movesStringBuilder3.AppendLine("Type: " & move.Type)
+                movesStringBuilder3.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder3.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox3_P1,
+                               "Name: " & pokemonData3.Name & vbCrLf &
+                               "Type: " & pokemonData3.Type & vbCrLf &
+                               "HP: " & pokemonData3.HP & vbCrLf &
+                               "PP: " & pokemonData3.PP & vbCrLf &
+                               "Speed: " & pokemonData3.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder3.ToString())
+
+            Dim pokemonData4 As PokemonData = GetPokemonData(Form1.Label4_P1.Text)
+            Dim moves4 As List(Of MoveData) = GetPokemonMoves(Form1.Label4_P1.Text)
+            Dim movesStringBuilder4 As New StringBuilder()
+
+            For Each move As MoveData In moves4
+                movesStringBuilder4.AppendLine("Name: " & move.Name)
+                movesStringBuilder4.AppendLine("Type: " & move.Type)
+                movesStringBuilder4.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder4.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox4_P1,
+                               "Name: " & pokemonData4.Name & vbCrLf &
+                               "Type: " & pokemonData4.Type & vbCrLf &
+                               "HP: " & pokemonData4.HP & vbCrLf &
+                               "PP: " & pokemonData4.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder4.ToString())
+
+            Dim pokemonData5 As PokemonData = GetPokemonData(Form1.Label5_P1.Text)
+            Dim moves5 As List(Of MoveData) = GetPokemonMoves(Form1.Label5_P1.Text)
+            Dim movesStringBuilder5 As New StringBuilder()
+
+            For Each move As MoveData In moves5
+                movesStringBuilder5.AppendLine("Name: " & move.Name)
+                movesStringBuilder5.AppendLine("Type: " & move.Type)
+                movesStringBuilder5.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder5.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox5_P1,
+                               "Name: " & pokemonData5.Name & vbCrLf &
+                               "Type: " & pokemonData5.Type & vbCrLf &
+                               "HP: " & pokemonData5.HP & vbCrLf &
+                               "PP: " & pokemonData5.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder5.ToString())
+
+            Dim pokemonData6 As PokemonData = GetPokemonData(Form1.Label6_P1.Text)
+            Dim moves6 As List(Of MoveData) = GetPokemonMoves(Form1.Label6_P1.Text)
+            Dim movesStringBuilder6 As New StringBuilder()
+
+            For Each move As MoveData In moves6
+                movesStringBuilder6.AppendLine("Name: " & move.Name)
+                movesStringBuilder6.AppendLine("Type: " & move.Type)
+                movesStringBuilder6.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder6.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox6_P1,
+                               "Name: " & pokemonData6.Name & vbCrLf &
+                               "Type: " & pokemonData6.Type & vbCrLf &
+                               "HP: " & pokemonData6.HP & vbCrLf &
+                               "PP: " & pokemonData6.PP & vbCrLf &
+                               "Speed: " & pokemonData6.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder6.ToString())
+
+            Me.Hide()
+
+        Else
+
+            MessageBox.Show("Formulary is not open.")
+
+        End If
+
+        OpenToChooseRed = False
+
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+
+        If Application.OpenForms.OfType(Of Form1)().Any() Then
+
+            Dim Form1 As Form1 = Application.OpenForms.OfType(Of Form1)().First()
+            Dim TeamRed2 As New DataTable()
+            Dim AllTeam6 As New MySqlDataAdapter("Select * From Team6", Connection)
+
+            Connection.Open()
+            AllTeam6.Fill(TeamRed2)
+            Connection.Close()
+
+            Dim Row1 As DataRow = TeamRed2.Rows(0)
+            Dim Row2 As DataRow = TeamRed2.Rows(1)
+            Dim Row3 As DataRow = TeamRed2.Rows(2)
+            Dim Row4 As DataRow = TeamRed2.Rows(3)
+            Dim Row5 As DataRow = TeamRed2.Rows(4)
+            Dim Row6 As DataRow = TeamRed2.Rows(5)
+
+            Dim Column1 As Object = Row1("Name")
+            Dim Column2 As Object = Row2("Name")
+            Dim Column3 As Object = Row3("Name")
+            Dim Column4 As Object = Row4("Name")
+            Dim Column5 As Object = Row5("Name")
+            Dim Column6 As Object = Row6("Name")
+
+            Form1.Label1_P1.Text = Column1
+            Form1.Label2_P1.Text = Column2
+            Form1.Label3_P1.Text = Column3
+            Form1.Label4_P1.Text = Column4
+            Form1.Label5_P1.Text = Column5
+            Form1.Label6_P1.Text = Column6
+
+            SetImageForControl(Form1.Label1_P1.Text, Form1.PictureBox1_P1.Image)
+            SetImageForControl(Form1.Label2_P1.Text, Form1.PictureBox2_P1.Image)
+            SetImageForControl(Form1.Label3_P1.Text, Form1.PictureBox3_P1.Image)
+            SetImageForControl(Form1.Label4_P1.Text, Form1.PictureBox4_P1.Image)
+            SetImageForControl(Form1.Label5_P1.Text, Form1.PictureBox5_P1.Image)
+            SetImageForControl(Form1.Label6_P1.Text, Form1.PictureBox6_P1.Image)
+
+            Form1.Checked1_P1.Visible = True
+            Form1.Checked2_P1.Visible = True
+            Form1.Checked3_P1.Visible = True
+            Form1.Checked4_P1.Visible = True
+            Form1.Checked5_P1.Visible = True
+            Form1.Checked6_P1.Visible = True
+
+            If Form1.SelectedPokemonTeam1 Is Nothing Then
+                Form1.SelectedPokemonTeam1 = New List(Of String)()
+            End If
+
+            For i As Integer = 1 To 6
+                Dim labelText As String = DirectCast(Form1.Controls("Label" & i & "_P1"), Label).Text
+                Form1.SelectedPokemonTeam1.Add(labelText)
+            Next i
+
+            Form1.Team1Count = 6
+
+            Dim pokemonData As PokemonData = GetPokemonData(Form1.Label1_P1.Text)
+            Dim moves As List(Of MoveData) = GetPokemonMoves(Form1.Label1_P1.Text)
+            Dim movesStringBuilder As New StringBuilder()
+
+            For Each move As MoveData In moves
+                movesStringBuilder.AppendLine("Name: " & move.Name)
+                movesStringBuilder.AppendLine("Type: " & move.Type)
+                movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox1_P1,
+                               "Name: " & pokemonData.Name & vbCrLf &
+                               "Type: " & pokemonData.Type & vbCrLf &
+                               "HP: " & pokemonData.HP & vbCrLf &
+                               "PP: " & pokemonData.PP & vbCrLf &
+                               "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+            Dim pokemonData2 As PokemonData = GetPokemonData(Form1.Label2_P1.Text)
+            Dim moves2 As List(Of MoveData) = GetPokemonMoves(Form1.Label2_P1.Text)
+            Dim movesStringBuilder2 As New StringBuilder()
+
+            For Each move As MoveData In moves2
+                movesStringBuilder2.AppendLine("Name: " & move.Name)
+                movesStringBuilder2.AppendLine("Type: " & move.Type)
+                movesStringBuilder2.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder2.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox2_P1,
+                               "Name: " & pokemonData2.Name & vbCrLf &
+                               "Type: " & pokemonData2.Type & vbCrLf &
+                               "HP: " & pokemonData2.HP & vbCrLf &
+                               "PP: " & pokemonData2.PP & vbCrLf &
+                               "Speed: " & pokemonData2.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder2.ToString())
+
+            Dim pokemonData3 As PokemonData = GetPokemonData(Form1.Label3_P1.Text)
+            Dim moves3 As List(Of MoveData) = GetPokemonMoves(Form1.Label3_P1.Text)
+            Dim movesStringBuilder3 As New StringBuilder()
+
+            For Each move As MoveData In moves3
+                movesStringBuilder3.AppendLine("Name: " & move.Name)
+                movesStringBuilder3.AppendLine("Type: " & move.Type)
+                movesStringBuilder3.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder3.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox3_P1,
+                               "Name: " & pokemonData3.Name & vbCrLf &
+                               "Type: " & pokemonData3.Type & vbCrLf &
+                               "HP: " & pokemonData3.HP & vbCrLf &
+                               "PP: " & pokemonData3.PP & vbCrLf &
+                               "Speed: " & pokemonData3.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder3.ToString())
+
+            Dim pokemonData4 As PokemonData = GetPokemonData(Form1.Label4_P1.Text)
+            Dim moves4 As List(Of MoveData) = GetPokemonMoves(Form1.Label4_P1.Text)
+            Dim movesStringBuilder4 As New StringBuilder()
+
+            For Each move As MoveData In moves4
+                movesStringBuilder4.AppendLine("Name: " & move.Name)
+                movesStringBuilder4.AppendLine("Type: " & move.Type)
+                movesStringBuilder4.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder4.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox4_P1,
+                               "Name: " & pokemonData4.Name & vbCrLf &
+                               "Type: " & pokemonData4.Type & vbCrLf &
+                               "HP: " & pokemonData4.HP & vbCrLf &
+                               "PP: " & pokemonData4.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder4.ToString())
+
+            Dim pokemonData5 As PokemonData = GetPokemonData(Form1.Label5_P1.Text)
+            Dim moves5 As List(Of MoveData) = GetPokemonMoves(Form1.Label5_P1.Text)
+            Dim movesStringBuilder5 As New StringBuilder()
+
+            For Each move As MoveData In moves5
+                movesStringBuilder5.AppendLine("Name: " & move.Name)
+                movesStringBuilder5.AppendLine("Type: " & move.Type)
+                movesStringBuilder5.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder5.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox5_P1,
+                               "Name: " & pokemonData5.Name & vbCrLf &
+                               "Type: " & pokemonData5.Type & vbCrLf &
+                               "HP: " & pokemonData5.HP & vbCrLf &
+                               "PP: " & pokemonData5.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder5.ToString())
+
+            Dim pokemonData6 As PokemonData = GetPokemonData(Form1.Label6_P1.Text)
+            Dim moves6 As List(Of MoveData) = GetPokemonMoves(Form1.Label6_P1.Text)
+            Dim movesStringBuilder6 As New StringBuilder()
+
+            For Each move As MoveData In moves6
+                movesStringBuilder6.AppendLine("Name: " & move.Name)
+                movesStringBuilder6.AppendLine("Type: " & move.Type)
+                movesStringBuilder6.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder6.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox6_P1,
+                               "Name: " & pokemonData6.Name & vbCrLf &
+                               "Type: " & pokemonData6.Type & vbCrLf &
+                               "HP: " & pokemonData6.HP & vbCrLf &
+                               "PP: " & pokemonData6.PP & vbCrLf &
+                               "Speed: " & pokemonData6.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder6.ToString())
+
+            Me.Hide()
+
+        Else
+
+            MessageBox.Show("Formulary is not open.")
+
+        End If
+
+        OpenToChooseRed = False
+
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+
+        If Application.OpenForms.OfType(Of Form1)().Any() Then
+
+            Dim Form1 As Form1 = Application.OpenForms.OfType(Of Form1)().First()
+            Dim TeamRed3 As New DataTable()
+            Dim AllTeam7 As New MySqlDataAdapter("Select * From Team7", Connection)
+
+            Connection.Open()
+            AllTeam7.Fill(TeamRed3)
+            Connection.Close()
+
+            Dim Row1 As DataRow = TeamRed3.Rows(0)
+            Dim Row2 As DataRow = TeamRed3.Rows(1)
+            Dim Row3 As DataRow = TeamRed3.Rows(2)
+            Dim Row4 As DataRow = TeamRed3.Rows(3)
+            Dim Row5 As DataRow = TeamRed3.Rows(4)
+            Dim Row6 As DataRow = TeamRed3.Rows(5)
+
+            Dim Column1 As Object = Row1("Name")
+            Dim Column2 As Object = Row2("Name")
+            Dim Column3 As Object = Row3("Name")
+            Dim Column4 As Object = Row4("Name")
+            Dim Column5 As Object = Row5("Name")
+            Dim Column6 As Object = Row6("Name")
+
+            Form1.Label1_P1.Text = Column1
+            Form1.Label2_P1.Text = Column2
+            Form1.Label3_P1.Text = Column3
+            Form1.Label4_P1.Text = Column4
+            Form1.Label5_P1.Text = Column5
+            Form1.Label6_P1.Text = Column6
+
+            SetImageForControl(Form1.Label1_P1.Text, Form1.PictureBox1_P1.Image)
+            SetImageForControl(Form1.Label2_P1.Text, Form1.PictureBox2_P1.Image)
+            SetImageForControl(Form1.Label3_P1.Text, Form1.PictureBox3_P1.Image)
+            SetImageForControl(Form1.Label4_P1.Text, Form1.PictureBox4_P1.Image)
+            SetImageForControl(Form1.Label5_P1.Text, Form1.PictureBox5_P1.Image)
+            SetImageForControl(Form1.Label6_P1.Text, Form1.PictureBox6_P1.Image)
+
+            Form1.Checked1_P1.Visible = True
+            Form1.Checked2_P1.Visible = True
+            Form1.Checked3_P1.Visible = True
+            Form1.Checked4_P1.Visible = True
+            Form1.Checked5_P1.Visible = True
+            Form1.Checked6_P1.Visible = True
+
+            If Form1.SelectedPokemonTeam1 Is Nothing Then
+                Form1.SelectedPokemonTeam1 = New List(Of String)()
+            End If
+
+            For i As Integer = 1 To 6
+                Dim labelText As String = DirectCast(Form1.Controls("Label" & i & "_P1"), Label).Text
+                Form1.SelectedPokemonTeam1.Add(labelText)
+            Next i
+
+            Form1.Team1Count = 6
+
+            Dim pokemonData As PokemonData = GetPokemonData(Form1.Label1_P1.Text)
+            Dim moves As List(Of MoveData) = GetPokemonMoves(Form1.Label1_P1.Text)
+            Dim movesStringBuilder As New StringBuilder()
+
+            For Each move As MoveData In moves
+                movesStringBuilder.AppendLine("Name: " & move.Name)
+                movesStringBuilder.AppendLine("Type: " & move.Type)
+                movesStringBuilder.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox1_P1,
+                               "Name: " & pokemonData.Name & vbCrLf &
+                               "Type: " & pokemonData.Type & vbCrLf &
+                               "HP: " & pokemonData.HP & vbCrLf &
+                               "PP: " & pokemonData.PP & vbCrLf &
+                               "Speed: " & pokemonData.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder.ToString())
+
+            Dim pokemonData2 As PokemonData = GetPokemonData(Form1.Label2_P1.Text)
+            Dim moves2 As List(Of MoveData) = GetPokemonMoves(Form1.Label2_P1.Text)
+            Dim movesStringBuilder2 As New StringBuilder()
+
+            For Each move As MoveData In moves2
+                movesStringBuilder2.AppendLine("Name: " & move.Name)
+                movesStringBuilder2.AppendLine("Type: " & move.Type)
+                movesStringBuilder2.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder2.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox2_P1,
+                               "Name: " & pokemonData2.Name & vbCrLf &
+                               "Type: " & pokemonData2.Type & vbCrLf &
+                               "HP: " & pokemonData2.HP & vbCrLf &
+                               "PP: " & pokemonData2.PP & vbCrLf &
+                               "Speed: " & pokemonData2.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder2.ToString())
+
+            Dim pokemonData3 As PokemonData = GetPokemonData(Form1.Label3_P1.Text)
+            Dim moves3 As List(Of MoveData) = GetPokemonMoves(Form1.Label3_P1.Text)
+            Dim movesStringBuilder3 As New StringBuilder()
+
+            For Each move As MoveData In moves3
+                movesStringBuilder3.AppendLine("Name: " & move.Name)
+                movesStringBuilder3.AppendLine("Type: " & move.Type)
+                movesStringBuilder3.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder3.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox3_P1,
+                               "Name: " & pokemonData3.Name & vbCrLf &
+                               "Type: " & pokemonData3.Type & vbCrLf &
+                               "HP: " & pokemonData3.HP & vbCrLf &
+                               "PP: " & pokemonData3.PP & vbCrLf &
+                               "Speed: " & pokemonData3.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder3.ToString())
+
+            Dim pokemonData4 As PokemonData = GetPokemonData(Form1.Label4_P1.Text)
+            Dim moves4 As List(Of MoveData) = GetPokemonMoves(Form1.Label4_P1.Text)
+            Dim movesStringBuilder4 As New StringBuilder()
+
+            For Each move As MoveData In moves4
+                movesStringBuilder4.AppendLine("Name: " & move.Name)
+                movesStringBuilder4.AppendLine("Type: " & move.Type)
+                movesStringBuilder4.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder4.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox4_P1,
+                               "Name: " & pokemonData4.Name & vbCrLf &
+                               "Type: " & pokemonData4.Type & vbCrLf &
+                               "HP: " & pokemonData4.HP & vbCrLf &
+                               "PP: " & pokemonData4.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder4.ToString())
+
+            Dim pokemonData5 As PokemonData = GetPokemonData(Form1.Label5_P1.Text)
+            Dim moves5 As List(Of MoveData) = GetPokemonMoves(Form1.Label5_P1.Text)
+            Dim movesStringBuilder5 As New StringBuilder()
+
+            For Each move As MoveData In moves5
+                movesStringBuilder5.AppendLine("Name: " & move.Name)
+                movesStringBuilder5.AppendLine("Type: " & move.Type)
+                movesStringBuilder5.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder5.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox5_P1,
+                               "Name: " & pokemonData5.Name & vbCrLf &
+                               "Type: " & pokemonData5.Type & vbCrLf &
+                               "HP: " & pokemonData5.HP & vbCrLf &
+                               "PP: " & pokemonData5.PP & vbCrLf &
+                               "Speed: " & pokemonData4.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder5.ToString())
+
+            Dim pokemonData6 As PokemonData = GetPokemonData(Form1.Label6_P1.Text)
+            Dim moves6 As List(Of MoveData) = GetPokemonMoves(Form1.Label6_P1.Text)
+            Dim movesStringBuilder6 As New StringBuilder()
+
+            For Each move As MoveData In moves6
+                movesStringBuilder6.AppendLine("Name: " & move.Name)
+                movesStringBuilder6.AppendLine("Type: " & move.Type)
+                movesStringBuilder6.AppendLine("Damage: " & move.Damage)
+                movesStringBuilder6.AppendLine()
+            Next
+
+            Form1.ToolTip1_P1.SetToolTip(Form1.PictureBox6_P1,
+                               "Name: " & pokemonData6.Name & vbCrLf &
+                               "Type: " & pokemonData6.Type & vbCrLf &
+                               "HP: " & pokemonData6.HP & vbCrLf &
+                               "PP: " & pokemonData6.PP & vbCrLf &
+                               "Speed: " & pokemonData6.Speed & vbCrLf & vbCrLf &
+                               "Moves:" & vbCrLf & movesStringBuilder6.ToString())
+
+            Me.Hide()
+
+        Else
+
+            MessageBox.Show("Formulary is not open.")
+
+        End If
+
+        OpenToChooseRed = False
+
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Me.Hide()
+    End Sub
+End Class
