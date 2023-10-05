@@ -1,0 +1,32 @@
+Public NotInheritable Class SplashScreen1
+
+    Private ProgressStart As Integer
+    Private ProgressEnding As Integer
+    Private ProgressIncrement As Integer
+
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+
+        ProgressStart = 0
+        ProgressEnding = 100
+        ProgressIncrement = 2
+
+        If ProgressBar1.Value < ProgressEnding Then
+            ProgressBar1.Value = ProgressBar1.Value + ProgressIncrement
+        Else
+            Timer1.Stop()
+            Form1.Show()
+            Me.Hide()
+        End If
+
+    End Sub
+
+    Private Sub SplashScreen1_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
+        Timer1.Start()
+
+    End Sub
+
+    Private Sub PushButtonExit_Click(sender As Object, e As EventArgs) Handles PushButtonExit.Click
+        End
+    End Sub
+End Class
