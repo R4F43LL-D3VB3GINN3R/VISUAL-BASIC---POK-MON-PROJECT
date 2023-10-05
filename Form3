@@ -1,0 +1,64 @@
+Public Class Form3
+    Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Evento de carregamento do Form3
+        ' Nenhum código necessário neste momento
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        ' Manipulador de clique para o botão Button1 (Slot 1)
+        ' Remove qualquer equipe existente no Slot 1
+        Connection.Open()
+        Deleteam5.ExecuteNonQuery()
+        Connection.Close()
+
+        ' Salva a equipe atual no Slot 1
+        Connection.Open()
+        Team1toTeam5.ExecuteNonQuery()
+        Connection.Close()
+
+        ' Exibe uma mensagem informando que a equipe foi salva no Slot 1
+
+        MessageBoxRedTeam.LabelMessage.Text = "Team Saved in Slot 1!"
+        MessageBoxRedTeam.Show()
+
+        ' Esconde o Form3 após a operação ser concluída
+        Me.Hide()
+
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+
+        Connection.Open()
+        Deleteam6.ExecuteNonQuery()
+        Connection.Close()
+
+        Connection.Open()
+        Team1toTeam6.ExecuteNonQuery()
+        Connection.Close()
+
+        MessageBoxRedTeam.LabelMessage.Text = "Team Saved in Slot 2!"
+        MessageBoxRedTeam.Show()
+        Me.Hide()
+
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+
+        Connection.Open()
+        Deleteam7.ExecuteNonQuery()
+        Connection.Close()
+
+        Connection.Open()
+        Team1toTeam7.ExecuteNonQuery()
+        Connection.Close()
+
+        MessageBoxRedTeam.LabelMessage.Text = "Team Saved in Slot 3!"
+        MessageBoxRedTeam.Show()
+        Me.Hide()
+
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Me.Hide()
+    End Sub
+End Class
